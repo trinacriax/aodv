@@ -156,6 +156,10 @@ private:
   uint16_t m_rreqCount;
   /// Number of RERRs used for RERR rate control
   uint16_t m_rerrCount;
+  /// Tracing control traffic sent
+  TracedCallback <Ptr<const Packet> > m_txPacketTrace;
+  /// Tracing control traffic received
+  TracedCallback <Ptr<const Packet> > m_rxPacketTrace;
 
 private:
   /// Start protocol operation

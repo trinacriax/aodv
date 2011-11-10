@@ -233,6 +233,11 @@ RoutingProtocol::GetTypeId (void)
                    MakeBooleanAccessor (&RoutingProtocol::SetBroadcastEnable,
                                         &RoutingProtocol::GetBroadcastEnable),
                    MakeBooleanChecker ())
+    .AddTraceSource ("ControlMessageTrafficSent", "Control message traffic sent.",
+				   MakeTraceSourceAccessor(&RoutingProtocol::m_txPacketTrace))
+    .AddTraceSource ("ControlMessageTrafficReceived", "Control message traffic received.",
+	  			   MakeTraceSourceAccessor(&RoutingProtocol::m_rxPacketTrace))
+
   ;
   return tid;
 }
@@ -875,6 +880,7 @@ RoutingProtocol::SendRequest (Ipv4Address dst)
         }
       NS_LOG_DEBUG ("Send RREQ with id " << rreqHeader.GetId () << " to socket");
       socket->SendTo (packet, 0, InetSocketAddress (destination, AODV_PORT));
+      m_txPacketTrace (packet);
     }
   ScheduleRreqRetry (dst);
   if (EnableHello)
@@ -917,7 +923,7 @@ RoutingProtocol::RecvAodv (Ptr<Socket> socket)
   Ipv4Address sender = inetSourceAddr.GetIpv4 ();
   Ipv4Address receiver = m_socketAddresses[socket].GetLocal ();
   NS_LOG_DEBUG ("AODV node " << this << " received a AODV packet from " << sender << " to " << receiver);
-
+  m_rxPacketTrace (packet);
   UpdateRouteToNeighbor (sender, receiver);
   TypeHeader tHeader (AODVTYPE_RREQ);
   packet->RemoveHeader (tHeader);
@@ -1142,6 +1148,7 @@ RoutingProtocol::RecvRequest (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address s
           destination = iface.GetBroadcast ();
         }
       socket->SendTo (packet, 0, InetSocketAddress (destination, AODV_PORT));
+      m_txPacketTrace (packet);
     }
 
   if (EnableHello)
@@ -1173,6 +1180,7 @@ RoutingProtocol::SendReply (RreqHeader const & rreqHeader, RoutingTableEntry con
   Ptr<Socket> socket = FindSocketWithInterfaceAddress (toOrigin.GetInterface ());
   NS_ASSERT (socket);
   socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODV_PORT));
+  m_txPacketTrace (packet);
 }
 
 void
@@ -1205,7 +1213,7 @@ RoutingProtocol::SendReplyByIntermediateNode (RoutingTableEntry & toDst, Routing
   Ptr<Socket> socket = FindSocketWithInterfaceAddress (toOrigin.GetInterface ());
   NS_ASSERT (socket);
   socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODV_PORT));
-
+  m_txPacketTrace (packet);
   // Generating gratuitous RREPs
   if (gratRep)
     {
@@ -1220,6 +1228,7 @@ RoutingProtocol::SendReplyByIntermediateNode (RoutingTableEntry & toDst, Routing
       NS_ASSERT (socket);
       NS_LOG_LOGIC ("Send gratuitous RREP " << packet->GetUid ());
       socket->SendTo (packetToDst, 0, InetSocketAddress (toDst.GetNextHop (), AODV_PORT));
+      m_txPacketTrace (packet);
     }
 }
 
@@ -1237,6 +1246,7 @@ RoutingProtocol::SendReplyAck (Ipv4Address neighbor)
   Ptr<Socket> socket = FindSocketWithInterfaceAddress (toNeighbor.GetInterface ());
   NS_ASSERT (socket);
   socket->SendTo (packet, 0, InetSocketAddress (neighbor, AODV_PORT));
+  m_txPacketTrace (packet);
 }
 
 void
@@ -1363,6 +1373,7 @@ RoutingProtocol::RecvReply (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address sen
   Ptr<Socket> socket = FindSocketWithInterfaceAddress (toOrigin.GetInterface ());
   NS_ASSERT (socket);
   socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODV_PORT));
+  m_txPacketTrace (packet);
 }
 
 void
@@ -1570,6 +1581,7 @@ RoutingProtocol::SendHello ()
           destination = iface.GetBroadcast ();
         }
       socket->SendTo (packet, 0, InetSocketAddress (destination, AODV_PORT));
+      m_txPacketTrace (packet);
     }
 }
 
@@ -1673,6 +1685,7 @@ RoutingProtocol::SendRerrWhenNoRouteToForward (Ipv4Address dst,
       NS_ASSERT (socket);
       NS_LOG_LOGIC ("Unicast RERR to the source of the data transmission");
       socket->SendTo (packet, 0, InetSocketAddress (toOrigin.GetNextHop (), AODV_PORT));
+      m_txPacketTrace (packet);
     }
   else
     {
@@ -1694,6 +1707,7 @@ RoutingProtocol::SendRerrWhenNoRouteToForward (Ipv4Address dst,
               destination = iface.GetBroadcast ();
             }
           socket->SendTo (packet, 0, InetSocketAddress (destination, AODV_PORT));
+          m_txPacketTrace (packet);
         }
     }
 }
@@ -1729,6 +1743,7 @@ RoutingProtocol::SendRerrMessage (Ptr<Packet> packet, std::vector<Ipv4Address> p
           NS_ASSERT (socket);
           NS_LOG_LOGIC ("one precursor => unicast RERR to " << toPrecursor.GetDestination () << " from " << toPrecursor.GetInterface ().GetLocal ());
           socket->SendTo (packet, 0, InetSocketAddress (precursors.front (), AODV_PORT));
+          m_txPacketTrace (packet);
           m_rerrCount++;
         }
       return;
@@ -1762,6 +1777,7 @@ RoutingProtocol::SendRerrMessage (Ptr<Packet> packet, std::vector<Ipv4Address> p
           destination = i->GetBroadcast ();
         }
       socket->SendTo (packet, 0, InetSocketAddress (destination, AODV_PORT));
+      m_txPacketTrace (packet);
       m_rerrCount++;
     }
 }

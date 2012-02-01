@@ -1761,6 +1761,7 @@ RoutingProtocol::SendRerrMessage (Ptr<Packet> packet, std::vector<Ipv4Address> p
         }
     }
 
+  Ptr<Packet> copy;
   for (std::vector<Ipv4InterfaceAddress>::const_iterator i = ifaces.begin (); i != ifaces.end (); ++i)
     {
       Ptr<Socket> socket = FindSocketWithInterfaceAddress (*i);
@@ -1776,8 +1777,9 @@ RoutingProtocol::SendRerrMessage (Ptr<Packet> packet, std::vector<Ipv4Address> p
         { 
           destination = i->GetBroadcast ();
         }
-      socket->SendTo (packet, 0, InetSocketAddress (destination, AODV_PORT));
-      m_txPacketTrace (packet);
+      copy = packet->Copy();
+      socket->SendTo (copy, 0, InetSocketAddress (destination, AODV_PORT));
+      m_txPacketTrace (copy);
       m_rerrCount++;
     }
 }

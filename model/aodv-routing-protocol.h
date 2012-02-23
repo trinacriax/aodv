@@ -88,6 +88,7 @@ public:
   bool GetHelloEnable () const { return EnableHello; }
   void SetBroadcastEnable (bool f) { EnableBroadcast = f; }
   bool GetBroadcastEnable () const { return EnableBroadcast; }
+  uint32_t GetRouteMetric (Ipv4Address destination);
   //\}
 private:
   ///\name Protocol parameters.

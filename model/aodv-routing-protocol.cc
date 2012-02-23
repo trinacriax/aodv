@@ -297,6 +297,18 @@ RoutingProtocol::Start ()
 
 }
 
+uint32_t
+RoutingProtocol::GetRouteMetric (Ipv4Address destination)
+{
+	RoutingTableEntry toNode;
+	bool found = m_routingTable.LookupValidRoute (destination, toNode);
+	if (!found){
+		SendRequest (destination);
+		return 0xffffffff;
+	}
+	return toNode.GetHop();
+}
+
 Ptr<Ipv4Route>
 RoutingProtocol::RouteOutput (Ptr<Packet> p, const Ipv4Header &header,
                               Ptr<NetDevice> oif, Socket::SocketErrno &sockerr)

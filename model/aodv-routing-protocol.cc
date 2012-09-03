@@ -123,6 +123,7 @@ RoutingProtocol::RoutingProtocol () :
   m_nb (HelloInterval),
   m_rreqCount (0),
   m_rerrCount (0),
+  m_oneHop (false),
   m_htimer (Timer::CANCEL_ON_DESTROY),
   m_rreqRateLimitTimer (Timer::CANCEL_ON_DESTROY),
   m_rerrRateLimitTimer (Timer::CANCEL_ON_DESTROY)
@@ -233,6 +234,10 @@ RoutingProtocol::GetTypeId (void)
                    MakeBooleanAccessor (&RoutingProtocol::SetBroadcastEnable,
                                         &RoutingProtocol::GetBroadcastEnable),
                    MakeBooleanChecker ())
+    .AddAttribute ("Enable1Hop", "Enable 1 hop limit",
+				   BooleanValue (false),
+				   MakeBooleanAccessor (&RoutingProtocol::m_oneHop),
+				   MakeBooleanChecker ())
     .AddTraceSource ("ControlMessageTrafficSent", "Control message traffic sent.",
 				   MakeTraceSourceAccessor(&RoutingProtocol::m_txPacketTrace))
     .AddTraceSource ("ControlMessageTrafficReceived", "Control message traffic received.",
@@ -1104,6 +1109,8 @@ RoutingProtocol::RecvRequest (Ptr<Packet> p, Ipv4Address receiver, Ipv4Address s
       SendReply (rreqHeader, toOrigin);
       return;
     }
+  if (m_oneHop)
+	  return;
   /*
    * (ii) or it has an active route to the destination, the destination sequence number in the node's existing route table entry for the destination
    *      is valid and greater than or equal to the Destination Sequence Number of the RREQ, and the "destination only" flag is NOT set.

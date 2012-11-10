@@ -233,9 +233,9 @@ RoutingProtocol::GetTypeId (void)
                    MakeBooleanAccessor (&RoutingProtocol::SetBroadcastEnable,
                                         &RoutingProtocol::GetBroadcastEnable),
                    MakeBooleanChecker ())
-    .AddTraceSource ("ControlMessageTrafficSent", "Control message traffic sent.",
+    .AddTraceSource ("AodvTxControl", "Control message traffic sent.",
 				   MakeTraceSourceAccessor(&RoutingProtocol::m_txPacketTrace))
-    .AddTraceSource ("ControlMessageTrafficReceived", "Control message traffic received.",
+    .AddTraceSource ("AodvRxControl", "Control message traffic received.",
 	  			   MakeTraceSourceAccessor(&RoutingProtocol::m_rxPacketTrace))
 
   ;
